@@ -6,12 +6,14 @@ const authRoutes = require("./routes/authRoutes");
 const { protect } = require("./middlewares/authMiddleware");
 const workerRoutes = require("./routes/workerRoutes");
 const jobRoutes = require("./routes/jobRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 // middleware
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/worker", workerRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/reviews", reviewRoutes);
 // test route
 app.get("/api/protected", protect, (req, res) => {
   res.json({

@@ -7,6 +7,10 @@ const jobSchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
+     workerId: {
+    type: mongoose.Schema.Types.ObjectId,   // ✅ FIX
+    ref: "User"
+  },
     title: {
       type: String,
       required: true

@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-exports.protect = (req, res, next) => {
+exports.protect = async (req, res, next) => {
   let token;
 
   if (
@@ -16,7 +17,14 @@ exports.protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+
+    // 🔥 IMPORTANT FIX
+    req.user = await User.findById(decoded.id).select("_id role");
+
+    if (!req.user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
     next();
   } catch (error) {
     res.status(401).json({ message: "Token failed" });
