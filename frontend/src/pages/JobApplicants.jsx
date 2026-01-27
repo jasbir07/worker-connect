@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import "../styles/Jobs.css";
 
 export default function JobApplicants() {
   const { jobId } = useParams();
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
 
   useEffect(() => {
@@ -24,6 +25,15 @@ export default function JobApplicants() {
     );
   };
 
+  const openChat = async () => {
+    try {
+      const res = await API.get(`/chat/room/${jobId}`);
+      navigate(`/chat/${res.data._id}`);
+    } catch (error) {
+      alert("Chat not available yet");
+    }
+  };
+
   return (
     <div className="jobs-container">
       <h2>Applicants</h2>
@@ -40,7 +50,7 @@ export default function JobApplicants() {
               Status: <strong>{app.status}</strong>
             </p>
 
-            {/* SHOW BUTTONS ONLY IF STATUS IS "applied" */}
+            {/* ACCEPT / REJECT — only when applied */}
             {app.status === "applied" && (
               <div>
                 <button
@@ -58,6 +68,16 @@ export default function JobApplicants() {
                   Reject
                 </button>
               </div>
+            )}
+
+            {/* CHAT — only when accepted */}
+            {app.status === "accepted" && (
+              <button
+                className="apply-btn"
+                onClick={openChat}
+              >
+                Open Chat
+              </button>
             )}
           </div>
         ))}

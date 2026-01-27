@@ -11,7 +11,7 @@ import PostJob from "./pages/PostJob";
 import MyJobs from "./pages/MyJobs";
 import MyApplications from "./pages/MyApplication";
 import JobApplicants from "./pages/JobApplicants";
-
+import Chat from "./pages/Chat";
 function App() {
   return (
     <AuthProvider>
@@ -77,7 +77,14 @@ function App() {
     </ProtectedRoute>
   }
 />
-
+<Route
+  path="/chat/:roomId"
+  element={
+    <ProtectedRoute>
+      <Chat />
+    </ProtectedRoute>
+  }
+/>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

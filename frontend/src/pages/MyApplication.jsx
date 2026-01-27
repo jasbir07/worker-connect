@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import "../styles/Jobs.css";
 
 export default function MyApplications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     API.get("/jobs/my-applications")
       .then((res) => setApplications(res.data))
       .finally(() => setLoading(false));
   }, []);
+
+  const openChat = async (jobId) => {
+    try {
+      const res = await API.get(`/chat/room/${jobId}`);
+      navigate(`/chat/${res.data._id}`);
+    } catch (error) {
+      alert("Chat not available");
+    }
+  };
 
   if (loading) {
     return <p className="status-text">Loading applications...</p>;
@@ -20,9 +31,7 @@ export default function MyApplications() {
     <div className="jobs-container">
       <h2>My Applications</h2>
 
-      {applications.length === 0 && (
-        <p>No applications yet.</p>
-      )}
+      {applications.length === 0 && <p>No applications yet.</p>}
 
       <div className="jobs-grid">
         {applications.map((app) => (
@@ -46,6 +55,16 @@ export default function MyApplications() {
                 {app.status}
               </strong>
             </p>
+
+            {/* CHAT UNLOCK ONLY IF ACCEPTED */}
+            {app.status === "accepted" && (
+              <button
+                className="apply-btn"
+                onClick={() => openChat(app.jobId._id)}
+              >
+                Open Chat
+              </button>
+            )}
           </div>
         ))}
       </div>
