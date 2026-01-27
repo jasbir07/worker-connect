@@ -1,0 +1,35 @@
+.navbar {
+  background: #2563eb;
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  cursor: pointer;
+}
+
+.nav-right {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.role {
+  text-transform: capitalize;
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: #dc2626;
+  border: none;
+  padding: 6px 12px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.nav-right button {
+  background: #334155;
+}

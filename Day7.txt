@@ -1,0 +1,164 @@
+Day 7 — Real-Time Notifications (Socket.IO)
+
+(Beginner-friendly + scalable design)
+
+🎯 Day 7 Goal
+
+By the end of today, you will have:
+
+🔔 Real-time notifications (job posted, applied, status updates)
+
+⚡ Socket.IO integrated with Express
+
+🧠 System design understanding: event-driven + async
+
+📈 A scalable approach (ready for many users)
+
+🧠 System Design (Simple First)
+Why real-time?
+
+Polling (asking the server again and again) is slow and wasteful.
+Real-time systems push events instantly.
+
+User Action → Event → Notification → User (instantly)
+
+1️⃣ Install Socket.IO
+npm install socket.io
+
+2️⃣ Attach Socket.IO to Your Server
+Update backend/server.js
+const app = require("./src/app");
+const dotenv = require("dotenv");
+const connectDB = require("./src/config/db");
+const http = require("http");
+
+dotenv.config();
+connectDB();
+
+const server = http.createServer(app);
+
+// Socket.IO setup
+const { Server } = require("socket.io");
+const io = new Server(server, {
+  cors: {
+    origin: "*"
+  }
+});
+
+// Make io available everywhere
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.join(userId); // user-specific room
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+
+📌 Why rooms?
+Each user has a private “room” → secure & scalable notifications.
+
+3️⃣ Notification Model (Persist Notifications)
+Create
+
+backend/src/models/Notification.js
+
+const mongoose = require("mongoose");
+
+const notificationSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    message: {
+      type: String,
+      required: true
+    },
+    read: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Notification", notificationSchema);
+
+4️⃣ Emit Notifications on Events
+Example: When a worker applies for a job
+
+Update applyJob in jobController.js:
+
+const Notification = require("../models/Notification");
+
+exports.applyJob = async (req, res) => {
+  try {
+    const application = await Application.create({
+      jobId: req.params.jobId,
+      workerId: req.user.id
+    });
+
+    // find job to notify client
+    const job = await Job.findById(req.params.jobId);
+
+    // save notification
+    const notification = await Notification.create({
+      userId: job.clientId,
+      message: "A worker has applied for your job"
+    });
+
+    // emit real-time notification
+    const io = req.app.get("io");
+    io.to(job.clientId.toString()).emit("notification", notification);
+
+    res.status(201).json(application);
+  } catch (error) {
+    res.status(500).json({ message: "Error applying for job" });
+  }
+};
+
+5️⃣ Client-Side (Concept Only for Now)
+
+Later in React you’ll do:
+
+socket.emit("join", userId);
+
+socket.on("notification", (data) => {
+  console.log("New notification:", data.message);
+});
+
+
+(No frontend coding today — backend focus 👍)
+
+🧠 Scalability (Interview Gold)
+What if users increase?
+
+Multiple backend servers
+
+Use Redis adapter for Socket.IO
+
+Notifications stay consistent
+
+📌 Interview line:
+
+“We use event-driven notifications with Socket.IO and can scale horizontally using Redis pub/sub.”
+
+✅ Day 7 Checklist
+
+✔ Socket.IO integrated
+✔ User-specific notification rooms
+✔ Persistent notifications
+✔ Event-driven system design

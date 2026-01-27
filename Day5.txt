@@ -1,0 +1,224 @@
+Day 5 — Job Posting & Applications
+
+(Core feature + system design made easy)
+
+🎯 Day 5 Goal
+
+By end of today, you will have:
+
+✅ Clients can post jobs
+
+✅ Workers can view & apply
+
+✅ Proper job–application relationship
+
+✅ Clear system design understanding (1-to-many)
+
+🧠 System Design (Beginner Level)
+❓ Real-world question
+
+One job → many workers apply
+
+So:
+
+Client ──creates──▶ Job
+Job ──has many──▶ Applications
+Worker ──creates──▶ Application
+
+
+📌 Design rule
+
+“Separate Job and Application collections to avoid data duplication and improve scalability.”
+
+1️⃣ Job Model
+Create
+
+backend/src/models/Job.js
+
+const mongoose = require("mongoose");
+
+const jobSchema = new mongoose.Schema(
+  {
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    title: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    location: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ["open", "assigned", "completed"],
+      default: "open"
+    }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Job", jobSchema);
+
+2️⃣ Application Model
+Create
+
+backend/src/models/Application.js
+
+const mongoose = require("mongoose");
+
+const applicationSchema = new mongoose.Schema(
+  {
+    jobId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Job",
+      required: true
+    },
+    workerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ["applied", "accepted", "rejected"],
+      default: "applied"
+    }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Application", applicationSchema);
+
+3️⃣ Job Controller
+Create
+
+backend/src/controllers/jobController.js
+
+const Job = require("../models/Job");
+const Application = require("../models/Application");
+
+exports.createJob = async (req, res) => {
+  try {
+    const job = await Job.create({
+      clientId: req.user.id,
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location
+    });
+    res.status(201).json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating job" });
+  }
+};
+
+exports.getAllJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find({ status: "open" });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching jobs" });
+  }
+};
+
+exports.applyJob = async (req, res) => {
+  try {
+    const application = await Application.create({
+      jobId: req.params.jobId,
+      workerId: req.user.id
+    });
+    res.status(201).json(application);
+  } catch (error) {
+    res.status(500).json({ message: "Error applying for job" });
+  }
+};
+
+4️⃣ Job Routes
+Create
+
+backend/src/routes/jobRoutes.js
+
+const express = require("express");
+const {
+  createJob,
+  getAllJobs,
+  applyJob
+} = require("../controllers/jobController");
+
+const { protect } = require("../middlewares/authMiddleware");
+const { authorize } = require("../middlewares/roleMiddleware");
+
+const router = express.Router();
+
+// Client posts job
+router.post("/", protect, authorize("client"), createJob);
+
+// Worker views jobs
+router.get("/", protect, authorize("worker"), getAllJobs);
+
+// Worker applies for job
+router.post(
+  "/:jobId/apply",
+  protect,
+  authorize("worker"),
+  applyJob
+);
+
+module.exports = router;
+
+5️⃣ Register Job Routes
+In app.js
+const jobRoutes = require("./routes/jobRoutes");
+app.use("/api/jobs", jobRoutes);
+
+6️⃣ Test in Postman
+Client: Create Job
+
+POST
+
+/api/jobs
+
+
+Headers:
+
+Authorization: Bearer <client_token>
+
+
+Body:
+
+{
+  "title": "Electrician Needed",
+  "description": "Wiring work for 2BHK flat",
+  "location": "Mumbai"
+}
+
+Worker: View Jobs
+
+GET
+
+/api/jobs
+
+Worker: Apply Job
+
+POST
+
+/api/jobs/<jobId>/apply
+
+🧠 Interview Explanation (IMPORTANT)
+
+“We modeled jobs and applications as separate collections to support one-to-many relationships. This avoids data duplication and allows efficient querying as the system scales.”
+
+✅ Day 5 Checklist
+
+✔ Job model
+✔ Application model
+✔ Client job posting
+✔ Worker job application
+✔ System design clarity

@@ -1,0 +1,231 @@
+Day 2 — Database + User Model + Auth Foundation
+
+(Beginner-friendly, system design included)
+
+🎯 Day 2 Goal
+
+By the end of today, you will have:
+
+✅ MongoDB connected
+
+✅ User model (Worker / Client)
+
+✅ Why DB design matters (system design basics)
+
+✅ Clean, scalable backend structure
+
+🧠 System Design (Very Simple – Day 2 Level)
+Question: Why do we need a database?
+
+Because:
+
+Users must exist even after server restarts
+
+Chat, jobs, reviews must be saved permanently
+
+Today’s flow:
+React → API → MongoDB
+
+1️⃣ MongoDB Setup (Easy Way)
+Option A (Recommended): MongoDB Atlas (Cloud)
+
+Go to mongodb.com → Atlas
+
+Create free cluster
+
+Get connection string
+
+It looks like:
+
+mongodb+srv://<username>:<password>@cluster0.mongodb.net/workerConnect
+
+
+📌 Replace <username> & <password>.
+
+2️⃣ Connect MongoDB to Backend
+Create file:
+
+backend/src/config/db.js
+
+const mongoose = require("mongoose");
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB Connected");
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+
+Update server.js
+const app = require("./src/app");
+const dotenv = require("dotenv");
+const connectDB = require("./src/config/db");
+
+dotenv.config();
+connectDB();
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+Test It
+npm run dev
+
+
+You should see:
+
+MongoDB Connected
+Server running on port 5000
+
+3️⃣ User Model (Very Important)
+Why User Model First?
+
+Everything depends on:
+
+Workers
+
+Clients
+
+Auth
+
+Chat
+
+Jobs
+
+Create file:
+
+backend/src/models/User.js
+
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    role: {
+      type: String,
+      enum: ["worker", "client"],
+      required: true
+    }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("User", userSchema);
+
+🧠 System Design Insight (Important)
+
+We store workers and clients in one User collection with a role field instead of separate tables.
+
+Why?
+
+Easier auth
+
+Less duplication
+
+Scales better
+
+4️⃣ Auth Dependencies
+
+Install:
+
+npm install bcryptjs jsonwebtoken
+
+5️⃣ Auth Controller (Signup Only for Today)
+Create:
+
+backend/src/controllers/authController.js
+
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+
+exports.register = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+6️⃣ Auth Route
+Create:
+
+backend/src/routes/authRoutes.js
+
+const express = require("express");
+const { register } = require("../controllers/authController");
+
+const router = express.Router();
+
+router.post("/register", register);
+
+module.exports = router;
+
+Add route to app.js
+const authRoutes = require("./routes/authRoutes");
+
+app.use("/api/auth", authRoutes);
+
+7️⃣ Test Signup API (Postman)
+
+POST
+
+http://localhost:5000/api/auth/register
+
+
+Body (JSON):
+
+{
+  "name": "Test Worker",
+  "email": "worker@test.com",
+  "password": "123456",
+  "role": "worker"
+}
+
+🧠 Interview Explanation (Memorize This)
+
+“We designed a unified User model with role-based access to support both workers and clients. Passwords are securely hashed using bcrypt before storing in MongoDB.”
+
+✅ Day 2 Checklist
+
+✔ MongoDB connected
+✔ User model created
+✔ Register API working
+✔ System design understood

@@ -1,17 +1,83 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import { AuthProvider } from "./context/AuthContext";
+import Jobs from "./pages/jobs";
+import PostJob from "./pages/PostJob";
+import MyJobs from "./pages/MyJobs";
+import MyApplications from "./pages/MyApplication";
+import JobApplicants from "./pages/JobApplicants";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Navbar />
         <Routes>
-          <Route path="/" element={<Login />} />
+          {/* ROOT */}
+          <Route path="/" element={<Navigate to="/login" />} />
+
+          {/* AUTH */}
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* PROTECTED */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <Jobs />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/post-job"
+            element={
+              <ProtectedRoute>
+                <PostJob />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/my-jobs"
+            element={
+              <ProtectedRoute>
+                <MyJobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+  path="/my-applications"
+  element={
+    <ProtectedRoute>
+      <MyApplications />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/job/:jobId/applications"
+  element={
+    <ProtectedRoute>
+      <JobApplicants />
+    </ProtectedRoute>
+  }
+/>
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

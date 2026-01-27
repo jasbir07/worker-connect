@@ -2,7 +2,12 @@ const express = require("express");
 const {
   createJob,
   getAllJobs,
-  applyJob
+  applyJob,
+  getMyJobs,
+  getMyApplications,
+  getJobApplications,
+  updateApplicationStatus,
+  getAppliedJobIds
 } = require("../controllers/jobController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -10,28 +15,31 @@ const { authorize } = require("../middlewares/roleMiddleware");
 
 const router = express.Router();
 
-// CLIENT posts job
-router.post(
-  "/",
+/* ===== STATIC ROUTES FIRST ===== */
+
+// Client
+router.post("/", protect, authorize("client"), createJob);
+router.get("/", protect, authorize("worker", "client"), getAllJobs);
+router.get("/my-jobs", protect, authorize("client"), getMyJobs);
+
+// Worker
+router.get("/my-applications", protect, authorize("worker"), getMyApplications);
+router.get("/applied", protect, authorize("worker"), getAppliedJobIds);
+
+/* ===== DYNAMIC ROUTES LAST ===== */
+
+// Apply
+router.post("/:jobId/apply", protect, authorize("worker"), applyJob);
+
+// Client job applications
+router.get("/:jobId/applications", protect, authorize("client"), getJobApplications);
+
+// Accept / Reject
+router.patch(
+  "/applications/:applicationId",
   protect,
   authorize("client"),
-  createJob
-);
-
-// WORKER & CLIENT view jobs
-router.get(
-  "/",
-  protect,
-  authorize("worker", "client"),
-  getAllJobs
-);
-
-// WORKER applies for job
-router.post(
-  "/:jobId/apply",
-  protect,
-  authorize("worker"),
-  applyJob
+  updateApplicationStatus
 );
 
 module.exports = router;
