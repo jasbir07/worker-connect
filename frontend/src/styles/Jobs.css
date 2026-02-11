@@ -1,37 +1,143 @@
 .jobs-container {
-  padding: 30px;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
 }
 
-.jobs-container h2 {
-  margin-bottom: 20px;
+.jobs-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.jobs-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.jobs-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.jobs-filters {
+  margin-bottom: 18px;
+}
+
+.jobs-filters-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+}
+
+.jobs-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jobs-filter-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.jobs-filter-input {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+.jobs-filter-input::placeholder {
+  color: #9ca3af;
 }
 
 .jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .job-card {
-  background: white;
-  padding: 20px;
-  border-radius: 6px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding: 16px 16px 14px;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.job-card h3 {
-  margin-bottom: 5px;
+.job-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.location {
-  font-size: 14px;
+.job-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.job-location {
+  font-size: 0.85rem;
   color: #2563eb;
 }
 
-.desc {
-  margin: 10px 0;
-  color: #475569;
-  font-size: 14px;
+.job-status-badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.job-status-badge.status-open {
+  background: #ecfdf3;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.job-status-badge.status-assigned {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.job-status-badge.status-completed {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.job-budget {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.job-budget span:first-child {
+  font-weight: 500;
+}
+
+.job-description {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.job-footer {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .apply-btn {
@@ -39,19 +145,176 @@
   color: white;
   border: none;
   padding: 8px 14px;
-  border-radius: 4px;
+  border-radius: 999px;
   cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.apply-btn:hover {
+.apply-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.apply-btn:not(:disabled):hover {
   background: #15803d;
 }
 
 .status-text {
-  padding: 20px;
+  padding: 20px 0;
   color: #475569;
 }
 
 .error {
-  color: red;
+  color: #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .jobs-filters-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chat styles */
+
+.chat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 360px;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chat-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.chat-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.chat-messages {
+  margin-top: 4px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: #f9fafb;
+  max-height: 420px;
+  min-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-message-row {
+  display: flex;
+}
+
+.chat-message-row-me {
+  justify-content: flex-end;
+}
+
+.chat-message-row-them {
+  justify-content: flex-start;
+}
+
+.chat-message-bubble {
+  max-width: 72%;
+  padding: 8px 10px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.chat-message-bubble-me {
+  background: #2563eb;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message-bubble-them {
+  background: #e5e7eb;
+  color: #111827;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.chat-message-sender {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chat-message-role {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.chat-message-text {
+  margin-bottom: 2px;
+}
+
+.chat-message-time {
+  font-size: 0.7rem;
+  color: #e5e7eb;
+  text-align: right;
+  opacity: 0.9;
+}
+
+.chat-message-bubble-them .chat-message-time {
+  color: #6b7280;
+}
+
+.chat-input-row {
+  margin-top: 2px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.chat-input::placeholder {
+  color: #9ca3af;
+}
+
+.chat-send-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chat-send-btn:hover {
+  background: #1d4ed8;
 }

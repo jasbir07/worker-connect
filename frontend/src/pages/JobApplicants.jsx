@@ -7,11 +7,14 @@ export default function JobApplicants() {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    API.get(`/jobs/${jobId}/applications`).then((res) =>
-      setApplications(res.data)
-    );
+    API.get(`/jobs/${jobId}/applications`)
+      .then((res) => setApplications(res.data))
+      .catch(() => setError("Failed to load applicants"))
+      .finally(() => setLoading(false));
   }, [jobId]);
 
   const updateStatus = async (applicationId, status) => {
@@ -34,11 +37,17 @@ export default function JobApplicants() {
     }
   };
 
+  if (loading) {
+    return <p className="status-text">Loading applicants...</p>;
+  }
+
   return (
     <div className="jobs-container">
       <h2>Applicants</h2>
 
-      {applications.length === 0 && <p>No applicants yet.</p>}
+      {error && <p className="status-text error">{error}</p>}
+
+      {applications.length === 0 && !error && <p>No applicants yet.</p>}
 
       <div className="jobs-grid">
         {applications.map((app) => (

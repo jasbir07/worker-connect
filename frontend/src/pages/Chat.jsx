@@ -3,11 +3,15 @@ import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import API from "../api/axios";
 import "../styles/Jobs.css";
-const myUserId = JSON.parse(atob(localStorage.getItem("token").split(".")[1])).id;
+
+// Safely parse user id from JWT token (if it exists)
+const token = localStorage.getItem("token");
+const myUserId = token ? JSON.parse(atob(token.split(".")[1])).id : null;
 
 export default function Chat() {
   const { roomId } = useParams();
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
@@ -35,12 +39,22 @@ export default function Chat() {
     });
 
     return () => {
-      socketRef.current.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, [roomId]);
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   const sendMessage = () => {
     if (!message.trim()) return;
+
+    if (!socketRef.current) return;
 
     socketRef.current.emit("sendMessage", {
       roomId,
@@ -50,37 +64,76 @@ export default function Chat() {
     setMessage("");
   };
 
+  const formatTime = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const getSenderId = (m) =>
+    (m.senderId && (m.senderId._id || m.senderId)) || null;
+
   return (
     <div className="jobs-container">
-      <h2>Chat</h2>
+      <div className="chat-card">
+        <div className="chat-header">
+          <div>
+            <h2 className="chat-title">Chat</h2>
+            <p className="chat-subtitle">
+              Coordinate details and next steps with the other side.
+            </p>
+          </div>
+        </div>
 
-      <div
-        style={{
-          minHeight: "300px",
-          border: "1px solid #e5e7eb",
-          padding: "10px",
-          overflowY: "auto"
-        }}
-      >
-        {messages.map((m, i) => (
-  <p key={i}>
-    <strong>
-      {m.senderName || m.senderId?.name} ({m.senderRole || m.senderId?.role})
-    </strong>
-    : {m.text}
-  </p>
-))}
+        <div className="chat-messages">
+          {messages.map((m) => {
+            const senderId = getSenderId(m);
+            const isMine =
+              myUserId && senderId && senderId.toString() === myUserId;
 
+            return (
+              <div
+                key={m._id || `${senderId}-${m.createdAt}-${m.text}`}
+                className={`chat-message-row ${
+                  isMine ? "chat-message-row-me" : "chat-message-row-them"
+                }`}
+              >
+                <div
+                  className={`chat-message-bubble ${
+                    isMine ? "chat-message-bubble-me" : "chat-message-bubble-them"
+                  }`}
+                >
+                  <div className="chat-message-meta">
+                    <span className="chat-message-sender">
+                      {isMine ? "You" : m.senderName || m.senderId?.name}
+                    </span>
+                    <span className="chat-message-role">
+                      {m.senderRole || m.senderId?.role}
+                    </span>
+                  </div>
+                  <div className="chat-message-text">{m.text}</div>
+                  <div className="chat-message-time">
+                    {formatTime(m.createdAt)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="chat-input-row">
+          <input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="chat-input"
+          />
+          <button className="chat-send-btn" onClick={sendMessage}>
+            Send
+          </button>
+        </div>
       </div>
-      <input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type message..."
-        style={{ width: "80%", padding: "8px" }}
-      />
-      <button className="apply-btn" onClick={sendMessage}>
-        Send
-      </button>
     </div>
   );
 }

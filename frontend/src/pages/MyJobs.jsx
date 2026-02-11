@@ -5,17 +5,28 @@ import "../styles/Jobs.css";
 
 export default function MyJobs() {
   const [jobs, setJobs] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    API.get("/jobs/my-jobs").then((res) => setJobs(res.data));
+    API.get("/jobs/my-jobs")
+      .then((res) => setJobs(res.data))
+      .catch(() => setError("Failed to load your jobs"))
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) {
+    return <p className="status-text">Loading your jobs...</p>;
+  }
 
   return (
     <div className="jobs-container">
       <h2>My Posted Jobs</h2>
 
-      {jobs.length === 0 && <p>No jobs posted yet.</p>}
+      {error && <p className="status-text error">{error}</p>}
+
+      {jobs.length === 0 && !error && <p>No jobs posted yet.</p>}
 
       <div className="jobs-grid">
         {jobs.map((job) => (

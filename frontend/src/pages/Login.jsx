@@ -26,31 +26,61 @@ export default function Login() {
 
   return (
     <div className="auth-container">
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Login</h2>
+      <form className="auth-card" onSubmit={handleSubmit} noValidate>
+        <h2 className="auth-title">Sign in</h2>
+        <p className="auth-subtitle">
+          Access your Worker-Connect account to find work or hire talent.
+        </p>
 
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        )}
 
-        <input
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          required
-        />
+        <div className="auth-field">
+          <label htmlFor="email" className="auth-label">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            onChange={handleChange}
+            required
+            className={error ? "auth-input auth-input-error" : "auth-input"}
+          />
+        </div>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-        />
+        <div className="auth-field">
+          <label htmlFor="password" className="auth-label">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            onChange={handleChange}
+            required
+            className={error ? "auth-input auth-input-error" : "auth-input"}
+          />
+        </div>
 
-        <button>Login</button>
+        <button type="submit" className="auth-button">
+          Log in
+        </button>
 
-        <p className="link-text">
+        <p className="auth-link-text">
           Don’t have an account?{" "}
-          <span onClick={() => navigate("/register")}>Register</span>
+          <button
+            type="button"
+            className="auth-link-button"
+            onClick={() => navigate("/register")}
+          >
+            Register
+          </button>
         </p>
       </form>
     </div>
