@@ -56,20 +56,28 @@ export default function MyJobs() {
   const handleSubmitRating = async ({ rating, comment }) => {
     try {
       const { job } = ratingModal;
+      const workerId = job.selectedWorker?._id ?? job.selectedWorker;
+      const jobId = job._id;
+      if (!workerId || !jobId) {
+        alert("Missing job or worker information");
+        return;
+      }
       await API.post("/reviews", {
-        workerId: job.selectedWorker._id || job.selectedWorker,
-        jobId: job._id,
-        rating,
-        comment
+        workerId: String(workerId),
+        jobId: String(jobId),
+        rating: Number(rating),
+        comment: comment || ""
       });
 
       // Mark job as rated
       setRatedJobs((prev) => new Set([...prev, job._id]));
       handleCloseRatingModal();
-      // Optionally reload jobs to refresh worker rating
       loadJobs();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to submit rating");
+      const message =
+        err.response?.data?.message ||
+        (err.response?.status === 404 ? "Endpoint not found. Is the backend running?" : "Failed to submit rating");
+      alert(message);
       throw err;
     }
   };

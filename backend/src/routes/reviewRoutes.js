@@ -9,7 +9,10 @@ const { authorize } = require("../middlewares/roleMiddleware");
 
 const router = express.Router();
 
-// Client creates review after job completion
+// Health check: GET /api/reviews/health (no auth) - confirms router is mounted
+router.get("/health", (req, res) => res.json({ ok: true, message: "Reviews API" }));
+
+// Client creates review after job completion (POST /api/reviews)
 router.post("/", protect, authorize("client"), createReview);
 
 // Get all reviews for a worker (optional - for future use)

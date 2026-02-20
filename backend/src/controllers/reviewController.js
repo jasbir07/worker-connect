@@ -29,11 +29,11 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // Step 3: Find Job
-    const job = await Job.findById(jobId);
+    // Step 3: Find Job (ensure jobId is a string for findById)
+    const job = await Job.findById(String(jobId));
 
     if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      return res.status(404).json({ message: "Job not found", jobId: String(jobId) });
     }
 
     // Check job status
