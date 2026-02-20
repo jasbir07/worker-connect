@@ -10,6 +10,7 @@ const jobRoutes = require("./routes/jobRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 // middleware
 app.use(cors());
@@ -21,6 +22,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 
 
