@@ -25,8 +25,12 @@ const jobSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["open", "assigned", "completed"],
+      enum: ["open", "in-progress", "completed", "cancelled"],
       default: "open"
+    },
+    selectedWorker: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     }
   },
   { timestamps: true }

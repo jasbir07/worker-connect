@@ -7,7 +7,11 @@ const {
   getMyApplications,
   getJobApplications,
   updateApplicationStatus,
-  getAppliedJobIds
+  getAppliedJobIds,
+  selectWorker,
+  completeJob,
+  completeApplication,
+  cancelJob
 } = require("../controllers/jobController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -34,12 +38,25 @@ router.post("/:jobId/apply", protect, authorize("worker"), applyJob);
 // Client job applications
 router.get("/:jobId/applications", protect, authorize("client"), getJobApplications);
 
-// Accept / Reject
+// Reject application
 router.patch(
   "/applications/:applicationId",
   protect,
   authorize("client"),
   updateApplicationStatus
 );
+
+// Complete application (booking) - client only
+router.put(
+  "/applications/:applicationId/complete",
+  protect,
+  authorize("client"),
+  completeApplication
+);
+
+// Job Lifecycle Management
+router.put("/:id/select-worker", protect, authorize("client"), selectWorker);
+router.put("/:id/complete", protect, authorize("client"), completeJob);
+router.put("/:id/cancel", protect, authorize("client"), cancelJob);
 
 module.exports = router;

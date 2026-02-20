@@ -114,10 +114,22 @@
   border-color: #bfdbfe;
 }
 
+.job-status-badge.status-in-progress {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
 .job-status-badge.status-completed {
   background: #fef3c7;
   color: #92400e;
   border-color: #fde68a;
+}
+
+.job-status-badge.status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
 }
 
 .job-budget {
@@ -134,10 +146,65 @@
   color: #4b5563;
 }
 
+.desc {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin: 8px 0;
+}
+
+.location {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 4px 0;
+}
+
+.worker-rating-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rating-stars {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.rating-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
 .job-footer {
   margin-top: 6px;
   display: flex;
   justify-content: flex-end;
+}
+
+.job-worker-info {
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 8px 0;
+}
+
+.job-worker-info p {
+  font-size: 0.85rem;
+  color: #374151;
+  margin: 0;
+}
+
+.job-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.job-actions .apply-btn {
+  margin: 0;
 }
 
 .apply-btn {

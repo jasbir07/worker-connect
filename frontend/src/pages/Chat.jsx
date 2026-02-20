@@ -15,14 +15,20 @@ export default function Chat() {
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
-    // 1️⃣ Load chat history
+    // Load chat history
     API.get(`/chat/messages/${roomId}`).then((res) => {
       setMessages(res.data);
     });
 
-    // 2️⃣ Create socket
+    // Load room info (for read-only when job is completed)
+    API.get(`/chat/rooms/${roomId}`)
+      .then((res) => setIsCompleted(res.data.isCompleted === true))
+      .catch(() => {});
+
+    // Create socket
     socketRef.current = io("http://localhost:5000", {
       auth: {
         token: localStorage.getItem("token")
@@ -52,7 +58,7 @@ export default function Chat() {
   }, [messages]);
 
   const sendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isCompleted) return;
 
     if (!socketRef.current) return;
 
@@ -122,17 +128,23 @@ export default function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="chat-input-row">
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="chat-input"
-          />
-          <button className="chat-send-btn" onClick={sendMessage}>
-            Send
-          </button>
-        </div>
+        {isCompleted ? (
+          <p className="status-text" style={{ padding: "12px", color: "#6b7280" }}>
+            This chat is read-only (job completed).
+          </p>
+        ) : (
+          <div className="chat-input-row">
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="chat-input"
+            />
+            <button className="chat-send-btn" onClick={sendMessage}>
+              Send
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

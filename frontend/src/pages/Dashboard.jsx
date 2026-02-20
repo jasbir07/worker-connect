@@ -1,11 +1,33 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import "../styles/Dashboard.css";
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [workerRating, setWorkerRating] = useState(null);
+
+  useEffect(() => {
+    if (user?.role === "worker") {
+      loadWorkerRating();
+    }
+  }, [user]);
+
+  const loadWorkerRating = async () => {
+    try {
+      const res = await API.get("/profile");
+      if (res.data.averageRating > 0) {
+        setWorkerRating({
+          averageRating: res.data.averageRating,
+          totalRatings: res.data.totalRatings
+        });
+      }
+    } catch (err) {
+      // Ignore errors
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -17,9 +39,22 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <span className="dashboard-role-pill">
-          {user.role === "worker" ? "Worker" : "Client"}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {user.role === "worker" && workerRating && (
+            <div className="dashboard-rating-display">
+              <span className="dashboard-rating-stars">
+                ⭐ {workerRating.averageRating.toFixed(1)}
+              </span>
+              <span className="dashboard-rating-count">
+                ({workerRating.totalRatings} review
+                {workerRating.totalRatings !== 1 ? "s" : ""})
+              </span>
+            </div>
+          )}
+          <span className="dashboard-role-pill">
+            {user.role === "worker" ? "Worker" : "Client"}
+          </span>
+        </div>
       </div>
 
       {/* SUMMARY CARDS */}

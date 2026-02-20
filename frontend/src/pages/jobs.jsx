@@ -113,8 +113,9 @@ export default function Jobs() {
             >
               <option value="all">All</option>
               <option value="open">Open</option>
-              <option value="assigned">In progress</option>
+              <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
@@ -159,10 +160,12 @@ export default function Jobs() {
                 <span
                   className={`job-status-badge status-${job.status || "open"}`}
                 >
-                  {job.status === "assigned"
-                    ? "In progress"
+                  {job.status === "in-progress"
+                    ? "In Progress"
                     : job.status === "completed"
                     ? "Completed"
+                    : job.status === "cancelled"
+                    ? "Cancelled"
                     : "Open"}
                 </span>
               </div>
@@ -181,8 +184,8 @@ export default function Jobs() {
                 >
                   {isApplied
                     ? "Applied"
-                    : job.status !== "open"
-                    ? "Not open"
+                    : job.status === "in-progress" || job.status === "completed" || job.status === "cancelled"
+                    ? "Not Available"
                     : "Apply"}
                 </button>
               </div>

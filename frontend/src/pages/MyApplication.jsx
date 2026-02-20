@@ -45,10 +45,12 @@ export default function MyApplications() {
               <strong
                 style={{
                   color:
-                    app.status === "accepted"
+                    app.status === "In Progress"
                       ? "green"
-                      : app.status === "rejected"
+                      : app.status === "Rejected"
                       ? "red"
+                      : app.status === "Completed"
+                      ? "#059669"
                       : "#2563eb"
                 }}
               >
@@ -56,11 +58,15 @@ export default function MyApplications() {
               </strong>
             </p>
 
-            {/* CHAT UNLOCK ONLY IF ACCEPTED */}
-            {app.status === "accepted" && (
+            {/* Open Chat when In Progress or Completed (read-only when Completed) */}
+            {(app.status === "In Progress" || app.status === "Completed") && (
               <button
                 className="apply-btn"
-                onClick={() => openChat(app.jobId._id)}
+                onClick={() =>
+                  app.chatId
+                    ? navigate(`/chat/${app.chatId}`)
+                    : openChat(app.jobId._id)
+                }
               >
                 Open Chat
               </button>

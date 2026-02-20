@@ -14,8 +14,12 @@ const applicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["applied", "accepted", "rejected"],
-      default: "applied"
+      enum: ["Pending", "In Progress", "Completed", "Rejected"],
+      default: "Pending"
+    },
+    chatId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ChatRoom"
     }
   },
   { timestamps: true }

@@ -35,6 +35,24 @@
   border: 1px solid #e0e7ff;
 }
 
+.dashboard-rating-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.dashboard-rating-stars {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.dashboard-rating-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
 .dashboard-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -2,24 +2,37 @@ const mongoose = require("mongoose");
 
 const workerProfileSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      unique: true
+    },
+    bio: {
+      type: String,
+      default: ""
     },
     skills: {
       type: [String],
-      required: true
+      default: []
     },
     experience: {
-      type: Number,
-      required: true
+      type: String,
+      default: ""
     },
     location: {
       type: String,
-      required: true
+      default: ""
     },
-    ratingAvg: {
+    profileImage: {
+      type: String,
+      default: ""
+    },
+    averageRating: {
+      type: Number,
+      default: 0
+    },
+    totalRatings: {
       type: Number,
       default: 0
     }

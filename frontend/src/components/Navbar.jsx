@@ -35,6 +35,8 @@ export default function Navbar() {
   </>
 )}
 
+        {/* PROFILE - Available for both roles */}
+        <button onClick={() => navigate("/profile")}>Profile</button>
 
         <button
           className="logout-btn"

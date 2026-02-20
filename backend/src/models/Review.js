@@ -2,26 +2,27 @@ const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
-    jobId: {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    }, // worker being rated
+    client: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    job: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Job",
-      required: true
-    },
-    workerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-    clientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
+      required: true,
+      unique: true // Only one rating per job
     },
     rating: {
       type: Number,
+      required: true,
       min: 1,
-      max: 5,
-      required: true
+      max: 5
     },
     comment: {
       type: String

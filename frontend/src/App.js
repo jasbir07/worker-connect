@@ -12,6 +12,7 @@ import MyJobs from "./pages/MyJobs";
 import MyApplications from "./pages/MyApplication";
 import JobApplicants from "./pages/JobApplicants";
 import Chat from "./pages/Chat";
+import Profile from "./pages/Profile";
 function App() {
   return (
     <AuthProvider>
@@ -82,6 +83,14 @@ function App() {
   element={
     <ProtectedRoute>
       <Chat />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Profile />
     </ProtectedRoute>
   }
 />
