@@ -1,7 +1,8 @@
 const Job = require("../models/Job");
 const Application = require("../models/Application");
 const ChatRoom = require("../models/ChatRoom");
-const Notification = require("../models/Notification");
+const User = require("../models/User");
+const { createAndEmitNotification } = require("./notificationController");
 
 /* ======================
    CLIENT: CREATE JOB
@@ -55,6 +56,17 @@ exports.applyJob = async (req, res) => {
       workerId: req.user._id,
       status: "Pending"
     });
+
+    const job = await Job.findById(req.params.jobId).populate("clientId", "name");
+    if (job) {
+      const worker = await User.findById(req.user._id).select("name");
+      await createAndEmitNotification(req, {
+        userId: job.clientId._id,
+        type: "application",
+        message: `${worker?.name || "A worker"} applied to your job "${job.title}".`,
+        link: `/job/${job._id}/applications`
+      });
+    }
 
     res.status(201).json(application);
   } catch (error) {
@@ -246,7 +258,13 @@ exports.selectWorker = async (req, res) => {
     const updatedJob = await Job.findById(id)
       .populate("selectedWorker", "name email");
 
-    // Return job and chat room so frontend can show "Open Chat"
+    await createAndEmitNotification(req, {
+      userId: workerId,
+      type: "selected",
+      message: `You were selected for the job "${job.title}".`,
+      link: `/my-applications`
+    });
+
     res.json({
       job: updatedJob,
       chatRoom: { _id: chatRoom._id }
@@ -296,6 +314,15 @@ exports.completeJob = async (req, res) => {
     const updatedJob = await Job.findById(id)
       .populate("selectedWorker", "name email");
 
+    if (job.selectedWorker) {
+      await createAndEmitNotification(req, {
+        userId: job.selectedWorker,
+        type: "completed",
+        message: `Job "${job.title}" has been marked as completed.`,
+        link: `/my-applications`
+      });
+    }
+
     res.json(updatedJob);
   } catch (error) {
     console.error("Complete job error:", error);
@@ -344,6 +371,13 @@ exports.completeApplication = async (req, res) => {
       "selectedWorker",
       "name email"
     );
+
+    await createAndEmitNotification(req, {
+      userId: application.workerId._id,
+      type: "completed",
+      message: `Job "${job.title}" has been marked as completed.`,
+      link: `/my-applications`
+    });
 
     res.json({ application: updatedApplication, job: updatedJob });
   } catch (error) {

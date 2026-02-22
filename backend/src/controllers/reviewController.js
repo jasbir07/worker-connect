@@ -1,6 +1,7 @@
 const Review = require("../models/Review");
 const Job = require("../models/Job");
 const WorkerProfile = require("../models/WorkerProfile");
+const { createAndEmitNotification } = require("./notificationController");
 
 /* ======================
    CLIENT: CREATE REVIEW
@@ -92,6 +93,13 @@ exports.createReview = async (req, res) => {
     profile.averageRating = Math.round(newAverageRating * 10) / 10; // Round to 1 decimal
     profile.totalRatings = newTotalRatings;
     await profile.save();
+
+    await createAndEmitNotification(req, {
+      userId: workerId,
+      type: "rating",
+      message: `You received a new rating for job "${job.title}".`,
+      link: `/profile`
+    });
 
     // Populate review for response
     const populatedReview = await Review.findById(review._id)

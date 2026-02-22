@@ -43,6 +43,10 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.user.id);
 
+  // Join user room for notifications (io.to(userId).emit)
+  const userId = socket.user.id.toString();
+  socket.join(userId);
+
   // ✅ JOIN CHAT ROOM
   socket.on("joinChatRoom", (roomId) => {
     if (!roomId) return;

@@ -78,7 +78,6 @@ export default function MyJobs() {
         err.response?.data?.message ||
         (err.response?.status === 404 ? "Endpoint not found. Is the backend running?" : "Failed to submit rating");
       alert(message);
-      throw err;
     }
   };
 

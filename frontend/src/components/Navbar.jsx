@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
@@ -16,6 +17,7 @@ export default function Navbar() {
       </h2>
 
       <div className="nav-right">
+        <NotificationBell />
         {/* WORKER NAV */}
         {user.role === "worker" && (
   <>

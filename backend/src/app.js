@@ -11,6 +11,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 // middleware
 app.use(cors());
@@ -23,8 +24,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-
-
+app.use("/api/notifications", notificationRoutes);
 
 // test route
 app.get("/api/protected", protect, (req, res) => {
