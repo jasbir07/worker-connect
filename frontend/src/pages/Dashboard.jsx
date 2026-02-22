@@ -290,6 +290,65 @@ export default function Dashboard() {
               )}
             </>
           )}
+
+          {/* SECONDARY LAYOUT: simple overview + helper copy */}
+          <div className="dashboard-secondary-grid">
+            <div className="dashboard-secondary-card">
+              <h3>At a glance</h3>
+              {stats.role === "worker" ? (
+                <ul>
+                  <li>
+                    <span className="dot" /> You&apos;ve applied to{" "}
+                    <strong>{stats.applicationsCount || 0}</strong> job
+                    {stats.applicationsCount !== 1 ? "s" : ""}.
+                  </li>
+                  <li>
+                    <span className="dot" />{" "}
+                    <strong>{stats.acceptedJobs || 0}</strong> active job
+                    {stats.acceptedJobs !== 1 ? "s" : ""} in progress.
+                  </li>
+                  <li>
+                    <span className="dot" />{" "}
+                    <strong>{stats.completedJobs || 0}</strong> completed job
+                    {stats.completedJobs !== 1 ? "s" : ""} in your history.
+                  </li>
+                </ul>
+              ) : (
+                <ul>
+                  <li>
+                    <span className="dot" /> You&apos;ve posted{" "}
+                    <strong>{stats.jobsPosted || 0}</strong> job
+                    {stats.jobsPosted !== 1 ? "s" : ""}.
+                  </li>
+                  <li>
+                    <span className="dot" />{" "}
+                    <strong>{stats.openPositions || 0}</strong> open position
+                    {stats.openPositions !== 1 ? "s" : ""} receiving applications.
+                  </li>
+                  <li>
+                    <span className="dot" />{" "}
+                    <strong>{stats.completedJobs || 0}</strong> completed job
+                    {stats.completedJobs !== 1 ? "s" : ""} so far.
+                  </li>
+                </ul>
+              )}
+            </div>
+
+            <div className="dashboard-secondary-card tips">
+              <h3>Tips</h3>
+              {stats.role === "worker" ? (
+                <p>
+                  Keep your profile up to date and apply to roles that closely match your
+                  skills and location to increase your chances of being selected.
+                </p>
+              ) : (
+                <p>
+                  Write clear job descriptions and respond quickly to applications to find
+                  the right worker faster and keep your hiring pipeline moving.
+                </p>
+              )}
+            </div>
+          </div>
         </>
       )}
     </div>
