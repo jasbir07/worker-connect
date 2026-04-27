@@ -8,7 +8,8 @@ export default function PostJob() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    location: ""
+    location: "",
+    amount: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,11 @@ export default function PostJob() {
     setLoading(true);
 
     try {
-      await API.post("/jobs", form);
+      const payload = { title: form.title, description: form.description, location: form.location };
+      if (form.amount != null && form.amount !== "") {
+        payload.amount = Number(form.amount);
+      }
+      await API.post("/jobs", payload);
       navigate("/dashboard"); // after success
     } catch {
       setError("Failed to post job");
@@ -59,6 +64,15 @@ export default function PostJob() {
           placeholder="Location"
           onChange={handleChange}
           required
+        />
+
+        <input
+          name="amount"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Budget (₹) – optional"
+          onChange={handleChange}
         />
 
         <button disabled={loading}>

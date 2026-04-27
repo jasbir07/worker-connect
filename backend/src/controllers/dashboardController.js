@@ -43,6 +43,13 @@ exports.getDashboardStats = async (req, res) => {
       });
     }
 
+    if (req.user.role === "admin") {
+      return res.json({
+        role: "admin",
+        message: "Use the Admin panel for platform analytics."
+      });
+    }
+
     if (req.user.role === "client") {
       // Jobs Posted
       const jobsPosted = await Job.countDocuments({
@@ -76,7 +83,7 @@ exports.getDashboardStats = async (req, res) => {
       });
     }
 
-    res.status(400).json({ message: "Invalid user role" });
+    return res.status(400).json({ message: "Invalid user role" });
   } catch (error) {
     console.error("Get dashboard stats error:", error);
     res.status(500).json({ message: "Error fetching dashboard stats" });

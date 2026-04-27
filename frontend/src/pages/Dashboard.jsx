@@ -11,6 +11,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     fetchStats();
   }, [user]);
 
@@ -24,6 +28,10 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  if (!user) {
+    return <div className="dashboard-container">Loading...</div>;
+  }
 
   return (
     <div className="dashboard-container">

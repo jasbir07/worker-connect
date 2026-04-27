@@ -4,7 +4,8 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     email: {
       type: String,
@@ -17,7 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["worker", "client"],
+      enum: ["worker", "client", "admin"],
       required: true
     }
   },

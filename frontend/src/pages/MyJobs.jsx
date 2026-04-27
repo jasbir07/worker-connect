@@ -105,11 +105,66 @@ export default function MyJobs() {
   const getStatusBadge = (status) => {
     const badges = {
       open: { text: "Open", className: "status-open" },
+      pending_payment: { text: "Pending Payment", className: "status-open" },
       "in-progress": { text: "In Progress", className: "status-in-progress" },
       completed: { text: "Completed", className: "status-completed" },
       cancelled: { text: "Cancelled", className: "status-cancelled" }
     };
     return badges[status] || { text: status, className: "" };
+  };
+
+  const loadRazorpayScript = (keyId) => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePay = async (job) => {
+    try {
+      const orderRes = await API.post(`/payments/create-order/${job._id}`);
+      const { orderId, amount, currency, keyId } = orderRes.data;
+      if (!keyId || !orderId) {
+        alert("Payment not configured");
+        return;
+      }
+      await loadRazorpayScript(keyId);
+      if (!window.Razorpay) {
+        alert("Could not load payment gateway");
+        return;
+      }
+      const options = {
+        key: keyId,
+        amount,
+        currency: currency || "INR",
+        order_id: orderId,
+        name: "WorkerConnect",
+        description: `Payment for: ${job.title}`,
+        handler: async (response) => {
+          try {
+            await API.post("/payments/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            loadJobs();
+          } catch (err) {
+            alert(err.response?.data?.message || "Payment verification failed");
+          }
+        }
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to start payment");
+    }
   };
 
   if (loading) {
@@ -149,7 +204,24 @@ export default function MyJobs() {
                 </div>
               )}
 
+              {job.amount > 0 && (
+                <p className="job-amount">
+                  Amount: ₹{(Number(job.amount) / 100).toFixed(2)}
+                </p>
+              )}
+
               <div className="job-actions">
+                {/* PENDING PAYMENT: Pay with Razorpay */}
+                {job.status === "pending_payment" && job.amount > 0 && (
+                  <button
+                    className="apply-btn"
+                    style={{ background: "#2563eb" }}
+                    onClick={() => handlePay(job)}
+                  >
+                    Pay ₹{(Number(job.amount) / 100).toFixed(2)}
+                  </button>
+                )}
+
                 {/* OPEN: Show applicants button */}
                 {job.status === "open" && (
                   <button

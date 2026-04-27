@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -13,6 +14,8 @@ import MyApplications from "./pages/MyApplication";
 import JobApplicants from "./pages/JobApplicants";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
+import AdminDashboard from "./pages/AdminDashboard";
+
 function App() {
   return (
     <AuthProvider>
@@ -94,6 +97,14 @@ function App() {
     </ProtectedRoute>
   }
 />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

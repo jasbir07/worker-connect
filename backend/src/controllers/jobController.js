@@ -2,6 +2,8 @@ const Job = require("../models/Job");
 const Application = require("../models/Application");
 const ChatRoom = require("../models/ChatRoom");
 const User = require("../models/User");
+const Transaction = require("../models/Transaction");
+const PlatformSettings = require("../models/PlatformSettings");
 const { createAndEmitNotification } = require("./notificationController");
 
 /* ======================
@@ -9,12 +11,18 @@ const { createAndEmitNotification } = require("./notificationController");
 ====================== */
 exports.createJob = async (req, res) => {
   try {
+    const amountRupees = Number(req.body.amount);
+    const amountPaise = Number.isFinite(amountRupees) && amountRupees >= 0
+      ? Math.round(amountRupees * 100)
+      : 0;
+
     const job = await Job.create({
       clientId: req.user._id,
       title: req.body.title,
       description: req.body.description,
       location: req.body.location,
-      status: "open"
+      status: "open",
+      amount: amountPaise
     });
 
     res.status(201).json(job);
@@ -250,9 +258,10 @@ exports.selectWorker = async (req, res) => {
     application.chatId = chatRoom._id;
     await application.save();
 
-    // Update job
+    // Update job: if job has amount, wait for payment before in-progress
     job.selectedWorker = workerId;
-    job.status = "in-progress";
+    const jobAmount = Number(job.amount) || 0;
+    job.status = jobAmount > 0 ? "pending_payment" : "in-progress";
     await job.save();
 
     const updatedJob = await Job.findById(id)
@@ -277,7 +286,8 @@ exports.selectWorker = async (req, res) => {
 
 /* ======================
    CLIENT: COMPLETE JOB
-   Only if status is in-progress
+   Only if status is in-progress.
+   If payment funded: create release + commission transactions, then complete.
 ====================== */
 exports.completeJob = async (req, res) => {
   try {
@@ -289,23 +299,50 @@ exports.completeJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // Verify client owns the job
     if (job.clientId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // Verify job is in-progress
     if (job.status !== "in-progress") {
-      return res.status(400).json({ 
-        message: "Can only complete jobs that are in-progress" 
+      return res.status(400).json({
+        message: "Can only complete jobs that are in-progress"
       });
     }
 
-    // Update job status
+    const amount = Number(job.amount) || 0;
+    const paymentStatus = job.paymentStatus || "unpaid";
+
+    if (amount > 0 && paymentStatus === "funded") {
+      const settings = await PlatformSettings.getSettings();
+      const commissionPercentage = settings.commissionPercentage ?? 10;
+      const minimumCommission = settings.minimumCommission ?? 0;
+      let commission = Math.round((amount * commissionPercentage) / 100);
+      if (commission < minimumCommission) commission = minimumCommission;
+      const workerAmount = amount - commission;
+
+      await Transaction.create([
+        {
+          type: "release",
+          job: job._id,
+          worker: job.selectedWorker,
+          client: job.clientId,
+          amount: workerAmount,
+          status: "completed"
+        },
+        {
+          type: "commission",
+          job: job._id,
+          amount: commission,
+          status: "completed"
+        }
+      ]);
+
+      job.paymentStatus = "released";
+    }
+
     job.status = "completed";
     await job.save();
 
-    // Update application status to Completed for the selected worker
     await Application.findOneAndUpdate(
       { jobId: id, workerId: job.selectedWorker },
       { status: "Completed" }
@@ -356,6 +393,37 @@ exports.completeApplication = async (req, res) => {
       return res.status(400).json({
         message: "Can only complete applications that are In Progress"
       });
+    }
+
+    const amount = Number(job.amount) || 0;
+    const paymentStatus = job.paymentStatus || "unpaid";
+
+    if (amount > 0 && paymentStatus === "funded") {
+      const settings = await PlatformSettings.getSettings();
+      const commissionPercentage = settings.commissionPercentage ?? 10;
+      const minimumCommission = settings.minimumCommission ?? 0;
+      let commission = Math.round((amount * commissionPercentage) / 100);
+      if (commission < minimumCommission) commission = minimumCommission;
+      const workerAmount = amount - commission;
+
+      await Transaction.create([
+        {
+          type: "release",
+          job: job._id,
+          worker: job.selectedWorker,
+          client: job.clientId,
+          amount: workerAmount,
+          status: "completed"
+        },
+        {
+          type: "commission",
+          job: job._id,
+          amount: commission,
+          status: "completed"
+        }
+      ]);
+
+      job.paymentStatus = "released";
     }
 
     application.status = "Completed";

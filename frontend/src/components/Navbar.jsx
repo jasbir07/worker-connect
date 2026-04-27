@@ -29,21 +29,40 @@ export default function Navbar() {
     [location.pathname]
   );
 
-  if (!user) return null;
-
-  const isWorker = user.role === "worker";
-  const isClient = user.role === "client";
-
-  const initials =
-    user?.name && user.name.trim().length > 0
-      ? user.name.trim()[0].toUpperCase()
-      : "?";
-
   const handleLogout = () => {
     setProfileOpen(false);
     logout();
     navigate("/login");
   };
+
+  // If no user, render minimal navbar
+  if (!user) {
+    return (
+      <nav className="wc-navbar">
+        <div className="wc-navbar-inner">
+          <div className="wc-navbar-left">
+            <button
+              type="button"
+              className="wc-logo"
+              onClick={() => navigate("/login")}
+            >
+              <span className="wc-logo-mark">WC</span>
+              <span className="wc-logo-text">WorkerConnect</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
+  const isWorker = user.role === "worker";
+  const isClient = user.role === "client";
+  const isAdmin = user.role === "admin";
+
+  const initials =
+    user?.name && user.name.trim().length > 0
+      ? user.name.trim()[0].toUpperCase()
+      : "?";
 
   return (
     <nav className="wc-navbar">
@@ -117,6 +136,18 @@ export default function Navbar() {
               </button>
             </>
           )}
+
+          {isAdmin && (
+            <button
+              type="button"
+              className={`wc-nav-link ${
+                isActive(["/admin"]) ? "active" : ""
+              }`}
+              onClick={() => navigate("/admin")}
+            >
+              Admin
+            </button>
+          )}
         </div>
 
         {/* RIGHT: Notifications + Profile */}
@@ -133,7 +164,7 @@ export default function Navbar() {
               <div className="wc-profile-text">
                 <span className="wc-profile-name">{user.name}</span>
                 <span className="wc-profile-role">
-                  {isWorker ? "Worker" : "Client"}
+                  {isWorker ? "Worker" : isClient ? "Client" : "Admin"}
                 </span>
               </div>
               <span

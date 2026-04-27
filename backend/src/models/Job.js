@@ -25,13 +25,23 @@ const jobSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["open", "in-progress", "completed", "cancelled"],
+      enum: ["open", "pending_payment", "in-progress", "completed", "cancelled"],
       default: "open"
     },
     selectedWorker: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
-    }
+    },
+    amount: {
+      type: Number,
+      default: 0
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "funded", "released"],
+      default: "unpaid"
+    },
+    razorpayOrderId: { type: String }
   },
   { timestamps: true }
 );
