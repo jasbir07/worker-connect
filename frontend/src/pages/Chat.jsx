@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import API from "../api/axios";
 import "../styles/Jobs.css";
 
-// Safely parse user id from JWT token (if it exists)
+// Safely parse user id from JWT token
 const token = localStorage.getItem("token");
 const myUserId = token ? JSON.parse(atob(token.split(".")[1])).id : null;
 
@@ -19,27 +19,37 @@ export default function Chat() {
 
   useEffect(() => {
     // Load chat history
-    API.get(`/chat/messages/${roomId}`).then((res) => {
-      setMessages(res.data);
-    });
+    API.get(`/chat/messages/${roomId}`)
+      .then((res) => setMessages(res.data))
+      .catch(() => setMessages([]));
 
-    // Load room info (for read-only when job is completed)
+    // Load room info
     API.get(`/chat/rooms/${roomId}`)
       .then((res) => setIsCompleted(res.data.isCompleted === true))
       .catch(() => {});
 
-    // Create socket
-    socketRef.current = io("http://localhost:5000", {
+    // 🔥 FIXED SOCKET (no localhost)
+    socketRef.current = io("/", {
       auth: {
         token: localStorage.getItem("token")
       },
-      transports: ["websocket"]
+      transports: ["websocket"],
+      withCredentials: true
     });
 
-    // 3️⃣ Join room
+    // Debug logs
+    socketRef.current.on("connect", () => {
+      console.log("Socket connected:", socketRef.current.id);
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket error:", err.message);
+    });
+
+    // Join room
     socketRef.current.emit("joinChatRoom", roomId);
 
-    // 4️⃣ Listen for messages
+    // Listen messages
     socketRef.current.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -52,17 +62,13 @@ export default function Chat() {
   }, [roomId]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = () => {
     if (!message.trim() || isCompleted) return;
 
-    if (!socketRef.current) return;
-
-    socketRef.current.emit("sendMessage", {
+    socketRef.current?.emit("sendMessage", {
       roomId,
       text: message
     });
@@ -106,7 +112,9 @@ export default function Chat() {
               >
                 <div
                   className={`chat-message-bubble ${
-                    isMine ? "chat-message-bubble-me" : "chat-message-bubble-them"
+                    isMine
+                      ? "chat-message-bubble-me"
+                      : "chat-message-bubble-them"
                   }`}
                 >
                   <div className="chat-message-meta">

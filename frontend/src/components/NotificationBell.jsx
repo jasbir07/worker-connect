@@ -31,7 +31,7 @@ export default function NotificationBell() {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // Fetch notifications on mount
+  // Fetch notifications
   useEffect(() => {
     API.get("/notifications")
       .then((res) => setNotifications(res.data || []))
@@ -39,26 +39,43 @@ export default function NotificationBell() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Socket: connect and listen for new notifications
+  // Socket connection (FIXED)
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const socket = io("http://localhost:5000", {
+    const socket = io("/", {
       auth: { token },
-      transports: ["websocket"]
+      transports: ["websocket"],
+      withCredentials: true
     });
+
     socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
 
     socket.on("newNotification", (data) => {
       setNotifications((prev) => [data, ...prev]);
       playNotificationSound();
+
       const id = data._id || `toast-${Date.now()}`;
-      setToasts((prev) => [...prev, { id, message: data.message, link: data.link || "" }]);
+
+      setToasts((prev) => [
+        ...prev,
+        { id, message: data.message, link: data.link || "" }
+      ]);
+
       const t = setTimeout(() => {
         setToasts((prev) => prev.filter((x) => x.id !== id));
       }, 5000);
+
       toastTimeoutsRef.current[id] = t;
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket error:", err.message);
     });
 
     return () => {
@@ -71,7 +88,7 @@ export default function NotificationBell() {
 
   const markAsRead = (id) => {
     API.put(`/notifications/${id}/read`)
-      .then((res) => {
+      .then(() => {
         setNotifications((prev) =>
           prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
         );
@@ -121,7 +138,7 @@ export default function NotificationBell() {
 
   return (
     <div className="notification-bell-wrapper">
-      {/* Toast container: fixed, top-right */}
+      {/* Toasts */}
       <div className="notification-toast-container" aria-live="polite">
         {toasts.map((toast) => (
           <button
@@ -138,66 +155,56 @@ export default function NotificationBell() {
                 e.stopPropagation();
                 dismissToast(toast.id);
               }}
-              aria-label="Dismiss"
             >
               ×
             </button>
           </button>
         ))}
       </div>
+
+      {/* Bell */}
       <button
         type="button"
         className="notification-bell-trigger"
         onClick={() => setDropdownOpen((o) => !o)}
-        aria-label="Notifications"
       >
-        <span className="bell-icon">🔔</span>
+        🔔
         {unreadCount > 0 && (
-          <span className="notification-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+          <span className="notification-badge">
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
         )}
       </button>
 
+      {/* Dropdown */}
       {dropdownOpen && (
-        <>
-          <div
-            className="notification-backdrop"
-            onClick={() => setDropdownOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="notification-dropdown">
-            <div className="notification-dropdown-header">
-              <span>Notifications</span>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  className="mark-all-read"
-                  onClick={markAllAsRead}
-                >
-                  Mark all read
-                </button>
-              )}
-            </div>
-            <div className="notification-list">
-              {loading ? (
-                <div className="notification-loading">Loading...</div>
-              ) : notifications.length === 0 ? (
-                <div className="notification-empty">No notifications yet.</div>
-              ) : (
-                notifications.map((n) => (
-                  <button
-                    type="button"
-                    key={n._id}
-                    className={`notification-item ${n.isRead ? "" : "unread"}`}
-                    onClick={() => handleNotificationClick(n)}
-                  >
-                    <p className="notification-message">{n.message}</p>
-                    <span className="notification-time">{formatDate(n.createdAt)}</span>
-                  </button>
-                ))
-              )}
-            </div>
+        <div className="notification-dropdown">
+          <div className="notification-dropdown-header">
+            <span>Notifications</span>
+            {unreadCount > 0 && (
+              <button onClick={markAllAsRead}>Mark all read</button>
+            )}
           </div>
-        </>
+
+          <div className="notification-list">
+            {loading ? (
+              <div>Loading...</div>
+            ) : notifications.length === 0 ? (
+              <div>No notifications yet.</div>
+            ) : (
+              notifications.map((n) => (
+                <button
+                  key={n._id}
+                  className={n.isRead ? "" : "unread"}
+                  onClick={() => handleNotificationClick(n)}
+                >
+                  <p>{n.message}</p>
+                  <span>{formatDate(n.createdAt)}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

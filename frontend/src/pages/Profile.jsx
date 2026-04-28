@@ -145,9 +145,8 @@ export default function Profile() {
   }
 
   const imageUrl = profile.profileImage
-    ? `http://localhost:5000${profile.profileImage}`
-    : null;
-
+  ? `/api${profile.profileImage}`
+  : null;
   return (
     <div className="profile-container">
       <div className="profile-card">
@@ -431,3 +430,4 @@ export default function Profile() {
     </div>
   );
 }
+
